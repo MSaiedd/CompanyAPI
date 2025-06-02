@@ -1,0 +1,39 @@
+[
+  {
+    "ContainingType": "CompanyEvaluationsAPI.API_Layer.Controllers.EmployeeController",
+    "Method": "GetEmployeesById",
+    "RelativePath": "api/Employee/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CompanyEvaluationsAPI.API_Layer.Controllers.EmployeeController",
+    "Method": "RateColleagues",
+    "RelativePath": "api/Employee/rate-colleagues/{raterId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "raterId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "data",
+        "Type": "System.Collections.Generic.ICollection\u00601[[CompanyEvaluationsAPI.Infrastructure_Layer.Dto.RatedEmployeeInputDto, CompanyEvaluationsAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
