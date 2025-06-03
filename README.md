@@ -1,90 +1,122 @@
-# Company Evaluations API Guide
+# 📊 CompanyEvaluationsAPI Documentation
 
-## 1. Overview
-This document explains the architecture, design patterns, workflows, and key practices used in this ASP.NET Core Web API project. The structure is built to be clear, maintainable, and reusable across other projects.
+## 🗂️ Overview
 
-## 2. Architecture Layers
-* **API Layer (Controllers)** - Handles HTTP requests/responses, does model binding, validation, and calls the service layer.
-* **Service(core) Layer** - Business logic lives here. Coordinates operations and calls Unit of work.
-* **Infrastructure Layer** - Deals with Everything related to database operations and data access.
+This document provides a comprehensive overview of the **CompanyEvaluationsAPI** repository, which implements an employee evaluation system using **ASP.NET Core Web API**.
 
-## 3. Design Patterns Used
-* **Repository Pattern**: abstracts data access.
-* **Unit of Work**: coordinates repository operations as a transaction.
-* **Service Pattern**: contains business logic.
+The system allows employees to rate their colleagues **within the same department** while enforcing business rules and maintaining data integrity.
 
-## 4. Typical Workflow
-1. Request hits Controller.
-2. Model binding converts JSON to DTO.
-3. Controller calls Service.
-5. Service calls Repository for DB operations.
-6. Unit of Work commits changes.
-7. Service returns result to Controller.
-8. Controller returns HTTP response.
+> For detailed architectural insights, refer to:
+- [System Architecture](#-system-architecture-overview)
+- [Technology Stack](#-technology-stack-and-dependencies)
+- [HTTP Endpoints & Testing](#)
 
-## 5. Async Programming
-* All DB calls and I/O operations use async/await.
-* Service and repository methods return Task or Task<T>.
+---
 
-Example:
-```
-public async Task<bool> HasAlreadyRated(int raterId)
-        {
-            return await context.Ratings.AnyAsync(r => r.RaterId == raterId);
-        }
-```
+## 🎯 Purpose and System Scope
 
-## 6. DTO Usage
-* Separate DTOs for input and output.
-* Keeps internal models safe from external changes.
+**CompanyEvaluationsAPI** is a modern **.NET 8.0** web application designed to manage employee performance evaluations within an organization.
 
-Example DTO:
-```csharp
-public class RatedEmployeeDto
-    {
-        [Required]
-        [MaxLength(20)]
-        public string Name { get; set; }
-        [Required]
-        [Range(1,5)]
-        public int rate{ get; set; }
-    }
-```
+It provides **RESTful APIs** for:
+- Rating colleagues
+- Retrieving employee data
+- Managing departments
 
-## 7. EF Core & Code First
-* Code First approach with migrations.
-* Models decorated with annotations or fluent API.
-* MySQL supported through Pomelo or MySQL EF Core provider.
+The architecture follows **Clean Architecture** principles, separating concerns across API, business, and data layers.
 
-## 8. Dependency Injection
-* Built-in DI container in ASP.NET Core.
-* Services, repositories, and unit of work registered with scoped lifetime.
-* Controllers receive dependencies via constructor injection.
+### ✅ Core Capabilities
 
-Example:
-```csharp
-builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-builder.Services.AddScoped<IRatingRepository, RatingRepository>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-```
+- 📈 Employee rating system (1–5 scale)
+- 🛡️ Department-based access control
+- 🚫 Self-rating & duplicate rating prevention
+- 📘 RESTful API with Swagger (OpenAPI)
+- 💾 MySQL persistence with EF Core
+- ⚙️ Asynchronous request handling
+
+---
+
+## 🧱 System Architecture Overview
+- The application implements a layered architecture with clear separation between presentation, business logic, and data access concerns:
+![System Architecture](./Images/img1.png)
 
 
-## 10. Error Handling & Validation
-* Use data annotations for basic validation.
-* Return proper HTTP codes (`400`, `404`, etc).
-* Global error handling in service layer  for consistency.
+## Layer Responsibilities:
 
+| **Layer**         | **Components**                        | **Responsibilities**                                                  |
+|-------------------|----------------------------------------|------------------------------------------------------------------------|
+| `API Layer`       | `EmployeeController`, `Swagger UI`     | Handles HTTP requests, model binding, validation, response formatting |
+| `Core Layer`      | `IEmployeeService`, `EmployeeService`, DTOs | Business logic, validation rules, orchestration                        |
+| `Infrastructure`  | Repositories, `UnitOfWork`, `DataContext` | Data access, transaction management, DB operations                     |
+| `Database`        | MySQL, Entity models                   | Data persistence, relationships, constraints                          |
 
-## 13. WorkFlow Summary Diagram
-```
-[Request] → [Controller] → [Service] → [Repository] → [Database]
-    ↑                                     ↓             ↓
-[DTOs]                                [Domain Models]
-                                        [Context]
-``` 
+---
 
-##14. OutPut
+## ⚙️ Technology Stack and Dependencies
 
-* Get Specific Employee evaluations
-** YOU CAN FIND OUTPUT IN IMAGES DIRECTORY
+The system leverages modern .NET ecosystem technologies with MySQL as the primary data store:
+![System Architecture](./Images/img2.png)
+
+### 📦 Key Package Dependencies
+
+| **Package**                      | **Version** | **Purpose**                            |
+|----------------------------------|-------------|----------------------------------------|
+| Microsoft.EntityFrameworkCore    | 8.0.0       | ORM and data access                    |
+| Pomelo.EntityFrameworkCore.MySql | 8.0.0       | MySQL provider for EF Core             |
+| MySqlConnector                   | 2.3.5       | MySQL database connectivity            |
+| Swashbuckle.AspNetCore           | 6.6.2       | OpenAPI/Swagger docs                   |
+| Microsoft.OpenApi                | 1.6.14      | OpenAPI spec support                   |
+
+---
+
+## 🔁 Core Business Workflow
+
+The request pipeline enforces business rules and preserves consistency:
+
+![System Architecture](./Images/img3.png)
+
+### 🧾 Business Rules Enforced
+
+- ✅ Employees can only rate colleagues in the **same department**
+- ❌ **Self-rating** is prohibited
+- ❌ **Duplicate ratings** are blocked
+- ✅ Rating score must be **1–5**
+- 🧩 All operations are **transactional**
+
+---
+
+## 🧩 Data Model and Entity Relationships
+
+The system maintains a simple but effective relational data model centered around employee evaluations:
+![System Architecture](./Images/img4.png)
+
+### 📄 Entity Characteristics
+
+- **Department**: Logical grouping of employees
+- **Employee**: Can give and receive ratings
+- **Rating**: Links a rater to a ratee with score and metadata
+
+---
+
+## 🧰 Development Environment and Build System
+
+The project is built using **Visual Studio 2022**, with helpful tools and integrated features.
+
+| **Component**          | **Purpose**                          | **File Reference**                                     |
+|------------------------|--------------------------------------|--------------------------------------------------------|
+| Visual Studio 2022     | Primary IDE                          | `CompanyEvaluationsAPI.sln`                           |
+| IIS Express            | Dev web server                       | `.vs/CompanyEvaluationsAPI/DesignTimeBuild/.dtbcache.v2` |
+| GitHub Copilot         | AI code assistant                    | `.vs/CompanyEvaluationsAPI/DesignTimeBuild/.dtbcache.v2` |
+| .NET 8.0 SDK           | Build and runtime                    | `.vs/CompanyEvaluationsAPI/DesignTimeBuild/.dtbcache.v2` |
+| EF Core Migrations     | Database schema management           | `CompanyEvaluationsAPI/Documntation.md`               |
+
+### 🔑 Key Development Features
+
+- 🧠 IntelliSense and semantic analysis
+- 🐞 Integrated debugging
+- 🔄 Automatic NuGet dependency resolution
+- 🚀 Hot reload support
+- 📘 Swagger UI for API testing
+
+---
+
+> © 2025 CompanyEvaluationsAPI – Built with ❤️ using .NET 8 & EF Core
